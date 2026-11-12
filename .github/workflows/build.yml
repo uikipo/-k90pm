@@ -1,0 +1,35 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 解包工程
+        run: |
+          unzip -o K90TouchHook-src.zip -d _src
+          cp -r _src/K90TouchHook/. .
+          rm -rf _src
+          ls app/src/main/java/com/k90/touch
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+
+      - name: 编译
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K90TouchHook-apk
+          path: app/build/outputs/apk/release/*.apk
